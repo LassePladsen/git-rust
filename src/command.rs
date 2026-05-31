@@ -27,8 +27,17 @@ pub fn cat_file(args: &[String]) {
         return;
     };
 
+    // Find path to objects dir. path e3123456 is .git/objects/e3/123456
+    if path.len() < 3 {
+        println!("Path name too short");
+        return;
+    }
+    let dir = &path[0..2];
+    let filename = &path[2..];
+    let path = format!(".git/objects/{dir}/{filename}");
+
     // Write blob contents to stdout
-    let contents = match blob::read_blob(path) {
+    let contents = match blob::read_blob(&path) {
         Ok(contents) => contents,
         Err(err) => {
             println!("{err}");
