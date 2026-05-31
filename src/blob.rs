@@ -1,3 +1,5 @@
+use std::io::prelude::*;
+use flate2::read::GzDecoder;
 use std::{
     fmt::{self, Debug, Display, Formatter},
     fs::File,
@@ -37,8 +39,10 @@ impl From<std::str::Utf8Error> for BlobError<'_> {
 pub fn read_blob(path: &str) -> BlobResult<'_, Vec<u8>> {
     // Open file
     let file = File::open(path)?;
-    let mut reader = BufReader::new(file);
-    // TODO: Decompress the contents
+
+    // Decompress the contents
+    let decoder = GzDecoder::new(file);
+    let mut reader = BufReader::new(decoder);
 
     // Read file.
     let mut header = [0u8; 5];
