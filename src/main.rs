@@ -3,6 +3,7 @@ use std::env;
 
 mod blob;
 mod command;
+mod compression;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

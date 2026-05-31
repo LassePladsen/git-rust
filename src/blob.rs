@@ -1,10 +1,9 @@
-use std::io::prelude::*;
-use flate2::read::GzDecoder;
 use std::{
     fmt::{self, Debug, Display, Formatter},
     fs::File,
     io::{self, BufRead, BufReader, Read},
 };
+use crate::compression::Decoder;
 
 #[derive(Debug)]
 pub enum BlobError<'a> {
@@ -41,7 +40,7 @@ pub fn read_blob(path: &str) -> BlobResult<'_, Vec<u8>> {
     let file = File::open(path)?;
 
     // Decompress the contents
-    let decoder = GzDecoder::new(file);
+    let decoder = Decoder::new(file);
     let mut reader = BufReader::new(decoder);
 
     // Read file.
