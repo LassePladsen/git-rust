@@ -1,9 +1,10 @@
+use crate::compression::{Compression, Decoder, Encoder};
+use sha1::{Digest, Sha1};
 use std::{
     fmt::{self, Debug, Display, Formatter},
-    fs::File,
-    io::{self, BufRead, BufReader, Read},
+    fs::{self, File},
+    io::{self, BufRead, BufReader, Read, Write},
 };
-use crate::compression::Decoder;
 
 #[derive(Debug)]
 pub enum BlobError<'a> {
@@ -67,4 +68,34 @@ pub fn read_blob(path: &str) -> BlobResult<'_, Vec<u8>> {
     let mut contents = vec![0u8; content_len.into()];
     let _ = reader.read_exact(&mut contents);
     Ok(contents)
+}
+
+pub fn write_blob(bytes: &[u8]) -> BlobResult<'_, ()> {
+    // Write blob header
+    let length = bytes.len();
+    let header = format!("blob {length}\0");
+    let blob_bytes: Vec<u8> = [header.as_bytes(), bytes].concat();
+
+    // Hash blob
+    let hash = hex::encode(Sha1::digest(&blob_bytes));
+    let hash_bytes = hash.as_bytes(); // idk why i need to bytes -> str -> bytes...
+
+    // Write to stdout
+    let _ = io::stdout().write_all(hash_bytes);
+    println!(); // newline
+
+    // Compress
+    let mut encoder = Encoder::new(Vec::new(), Compression::default());
+    encoder.write_all(&blob_bytes)?;
+    let compressed = encoder.finish()?;
+
+    // Find path to objects dir. path e3123456 is .git/objects/e3/123456
+    let dir_path = format!(".git/objects/{}", &hash[0..2]);
+    let _ = fs::create_dir(&dir_path);
+    let file_path = format!("{dir_path}/{}", &hash[2..]);
+    let mut file = File::create(file_path).expect("Could not create file");
+
+    // Write blob
+    file.write_all(&compressed)?;
+    Ok(())
 }

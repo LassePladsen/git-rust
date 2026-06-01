@@ -1,6 +1,6 @@
-use std::io::Write;
-use std::{fs::{self}, io};
 use crate::blob;
+use std::fs;
+use std::io::{Write, stdout};
 
 /// Init git dir
 pub fn init() {
@@ -37,12 +37,33 @@ pub fn cat_file(args: &[String]) {
     let path = format!(".git/objects/{dir}/{filename}");
 
     // Write blob contents to stdout
-    let contents = match blob::read_blob(&path) {
+    let contents = blob::read_blob(&path).expect("Could not read blob");
+    let _ = stdout().write_all(&contents);
+}
+
+/// Hash object to blob
+pub fn hash_object(args: &[String]) {
+    // Get path from positional arg
+    let mut path: Option<&str> = None;
+    for arg in &args[2..] {
+        // Flag argument, skip for now. TODO: support flags?
+        if arg.starts_with('-') {
+            continue;
+        }
+        path = Some(arg);
+    }
+    let Some(path) = path else {
+        println!("Missing path");
+        return;
+    };
+
+    // Read file
+    let bytes = match fs::read(path) {
         Ok(contents) => contents,
         Err(err) => {
             println!("{err}");
             return;
         }
     };
-    let _ = io::stdout().write_all(&contents);
+    blob::write_blob(&bytes).expect("Could not write blob");
 }

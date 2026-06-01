@@ -16,6 +16,7 @@ fn main() {
     match args[1].as_str() {
         "init" => command::init(),
         "cat-file" => command::cat_file(&args),
+        "hash-object" => command::hash_object(&args),
         cmd => println!("Unknown command: {}", cmd),
     }
 }
