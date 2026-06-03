@@ -13,27 +13,27 @@ pub fn init() {
 
 /// Read blob
 pub fn cat_file(args: &[String]) {
-    // Get path from positional arg
-    let mut path: Option<&str> = None;
+    // Get blob hash from positional arg
+    let mut hash: Option<&str> = None;
     for arg in &args[2..] {
         // Flag argument, skip for now. TODO: support flags?
         if arg.starts_with('-') {
             continue;
         }
-        path = Some(arg);
+        hash = Some(arg);
     }
-    let Some(path) = path else {
-        println!("Missing path");
+    let Some(hash) = hash else {
+        println!("Missing hash");
         return;
     };
 
-    // Find path to objects dir. path e3123456 is .git/objects/e3/123456
-    if path.len() < 3 {
-        println!("Path name too short");
+    // Find hash to objects dir. hash e3123456 is .git/objects/e3/123456
+    if hash.len() < 3 {
+        println!("hash name too short");
         return;
     }
-    let dir = &path[0..2];
-    let filename = &path[2..];
+    let dir = &hash[0..2];
+    let filename = &hash[2..];
     let path = format!(".git/objects/{dir}/{filename}");
 
     // Write blob contents to stdout
