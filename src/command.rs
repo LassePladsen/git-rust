@@ -1,4 +1,4 @@
-use std::fs;
+use std::fs::{self, File};
 use std::io::{Write, stdout};
 
 use crate::object::{self, blob};
@@ -33,7 +33,7 @@ pub fn cat_file(args: &[String]) {
         println!("hash name too short");
         return;
     }
-    let path = object::get_object_path(hash);
+    let path = object::get_path(hash);
 
     // Write blob contents to stdout
     let contents = blob::read_blob(&path).expect("Could not read blob");
@@ -89,8 +89,9 @@ pub fn ls_tree(args: &[String]) {
 
     // TODO: also support full print (where print_name_only=false)
     
-    // Read object
-    let path = object::get_object_path(hash);
+    // Read file
+    let path = object::get_path(hash);
+    let file = File
 
 
 }
