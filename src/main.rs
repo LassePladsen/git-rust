@@ -1,6 +1,5 @@
 use std::env;
 
-mod blob;
 mod command;
 mod compression;
 mod object;

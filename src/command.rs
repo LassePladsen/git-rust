@@ -1,6 +1,7 @@
-use crate::{blob, object};
 use std::fs;
 use std::io::{Write, stdout};
+
+use crate::object::{self, blob};
 
 /// Init git dir
 pub fn init() {
@@ -88,6 +89,8 @@ pub fn ls_tree(args: &[String]) {
 
     // TODO: also support full print (where print_name_only=false)
     
+    // Read object
     let path = object::get_object_path(hash);
+
 
 }
