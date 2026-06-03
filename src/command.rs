@@ -1,4 +1,4 @@
-use crate::blob;
+use crate::{blob, object};
 use std::fs;
 use std::io::{Write, stdout};
 
@@ -32,9 +32,7 @@ pub fn cat_file(args: &[String]) {
         println!("hash name too short");
         return;
     }
-    let dir = &hash[0..2];
-    let filename = &hash[2..];
-    let path = format!(".git/objects/{dir}/{filename}");
+    let path = object::get_object_path(hash);
 
     // Write blob contents to stdout
     let contents = blob::read_blob(&path).expect("Could not read blob");
@@ -66,4 +64,30 @@ pub fn hash_object(args: &[String]) {
         }
     };
     blob::write_blob(&bytes).expect("Could not write blob");
+}
+
+/// Inspect tree object
+pub fn ls_tree(args: &[String]) {
+    // Get tree hash input from positional arg
+    let mut hash: Option<&str> = None;
+    let mut print_name_only = false;
+    for arg in &args[2..] {
+        // Supports flag: --name-only
+        if "--name-only" == arg {
+            print_name_only = true;
+        }
+        if arg.starts_with('-') {
+            continue;
+        }
+        hash = Some(arg);
+    }
+    let Some(hash) = hash else {
+        println!("Missing hash");
+        return;
+    };
+
+    // TODO: also support full print (where print_name_only=false)
+    
+    let path = object::get_object_path(hash);
+
 }
