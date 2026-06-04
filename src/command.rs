@@ -1,7 +1,7 @@
 use std::fs::{self, File};
 use std::io::{Write, stdout};
 
-use crate::object::{self, blob};
+use crate::object::{self, Object, blob};
 
 /// Init git dir
 pub fn init() {
@@ -33,11 +33,11 @@ pub fn cat_file(args: &[String]) {
         println!("hash name too short");
         return;
     }
-    let path = object::get_path(hash);
+    let object = Object::new(hash);
 
     // Write blob contents to stdout
-    let contents = blob::read_blob(&path).expect("Could not read blob");
-    let _ = stdout().write_all(&contents);
+    // let contents = blob::read_blob(&path).expect("Could not read blob");
+    // let _ = stdout().write_all(&contents);
 }
 
 /// Hash object to blob
@@ -91,7 +91,7 @@ pub fn ls_tree(args: &[String]) {
     
     // Read file
     let path = object::get_path(hash);
-    let file = File
+    // let file = File
 
 
 }

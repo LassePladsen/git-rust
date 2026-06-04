@@ -1,4 +1,4 @@
-use crate::compression::{Compression, Decoder, Encoder};
+use crate::{compression::{Compression, Decoder, Encoder}, object};
 use sha1::{Digest, Sha1};
 use std::{
     fmt::{self, Debug, Display, Formatter},
@@ -37,37 +37,33 @@ impl From<std::str::Utf8Error> for BlobError<'_> {
 }
 
 pub fn read_blob(path: &str) -> BlobResult<'_, Vec<u8>> {
-    // Open file
-    let file = File::open(path)?;
-
-    // Decompress the contents
-    let decoder = Decoder::new(file);
-    let mut reader = BufReader::new(decoder);
-
-    // Read file.
-    let mut header = [0u8; 5];
-    reader.read_exact(&mut header)?;
+    let contents = fs::read_to_string(path);
+    println!("LP contents: {contents:?}");
+    let header = "";
+    object::Object::new(path);
 
     // First assert its a blob by checking first 5 characters is "blob "
-    if b"blob " != &header {
-        return Err(BlobError::NotABlob(path));
-    }
+    // if "blob " != header {
+    //     return Err(BlobError::NotABlob(path));
+    // }
 
-    // Read content byte length by reading to null-byte
-    let mut content_len_bytes = Vec::new();
-    reader.read_until(0, &mut content_len_bytes)?;
-    // Drop the null-byte
-    content_len_bytes.pop();
+    // // Read content byte length by reading to null-byte
+    // let mut content_len_bytes = Vec::new();
+    // reader.read_until(0, &mut content_len_bytes)?;
+    // // Drop the null-byte
+    // content_len_bytes.pop();
 
-    // Convert length to integer
-    let Ok(content_len) = str::from_utf8(&content_len_bytes)?.parse::<u8>() else {
-        return Err(BlobError::NotABlob(path));
-    };
+    // // Convert length to integer
+    // let Ok(content_len) = str::from_utf8(&content_len_bytes)?.parse::<u8>() else {
+    //     return Err(BlobError::NotABlob(path));
+    // };
 
-    // Read contents with the found length
-    let mut contents = vec![0u8; content_len.into()];
-    let _ = reader.read_exact(&mut contents);
-    Ok(contents)
+    // // Read contents with the found length
+    // let mut contents = vec![0u8; content_len.into()];
+    // let _ = reader.read_exact(&mut contents);
+    // Ok(contents)
+    //
+    Ok(Vec::new())
 }
 
 pub fn write_blob(bytes: &[u8]) -> BlobResult<'_, ()> {

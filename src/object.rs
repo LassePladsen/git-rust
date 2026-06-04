@@ -1,21 +1,77 @@
-use std::fs;
+use std::{fs, io};
+use std::io::prelude::*;
+use std::collections::VecDeque;
 
 use crate::compression;
 
 pub mod blob;
 
+pub type Bytes = Vec<u8>;
+
+#[derive(Debug)]
+pub enum ObjectType {
+    Blob,
+    Tree,
+}
+
+
+pub struct Object {
+    type_: ObjectType,
+    size: u32,
+    contents: Bytes,
+}
+
+impl Object {
+    /// Reads and decompressed object contents
+    pub fn new(object_hash: &str) -> io::Result<Object> {
+        let file_path = get_path(object_hash);
+        let file = fs::File::open(file_path)?;
+        let mut decoder = compression::Decoder::new(file);
+        let mut decompressed = Vec::new();
+        let _ = decoder.read_to_end(&mut decompressed)?;
+
+        // Convert contents to vec to efficiently pop from the front
+        let mut decompressed = VecDeque::from(decompressed);
+
+        // Header: <object_type><size>null_byte
+        // Read type up to space
+        let mut type_buf = Vec::new();
+        while let Some(byte) = decompressed.pop_front() {
+            if b' ' == byte {
+                break;
+            }
+            type_buf.push(byte);
+        }
+        // convert type to string and interpret it
+        let type_: ObjectType = match str::from_utf8(&type_buf).expect("Invalid UTF in object type buffer") {
+            "blob" => ObjectType::Blob,
+            "tree" => ObjectType::Tree,
+            s => panic!("Invalid type: {s}"),
+        };
+        drop(type_buf);
+
+        // Read size up to null byte
+        let mut size_buf = Vec::new();
+        while let Some(byte) = decompressed.pop_front() {
+            if 0 == byte {
+                break;
+            }
+            size_buf.push(byte);
+        }
+        let size: u32 = dbg!(str::from_utf8(&size_buf).expect("Invalid UTF in size type buffer"))
+            .parse().expect("Could not parse size byte to integer");
+
+        // Read rest of contents
+        let contents = Vec::from(decompressed);
+
+        Ok(Object{size, type_, contents})
+
+    }
+
+}
+
 pub fn get_path(object_hash: &str) -> String {
     let dir = &object_hash[0..2];
     let filename = &object_hash[2..];
     format!(".git/objects/{dir}/{filename}")
-}
-
-/// Reads and decompressed object contents
-/// TODO: fix handling results
-pub fn read_to_string(file_path: &str) -> String {
-    let contents = fs::read_to_string(file_path)?;
-    let decoder = compression::Decoder::new(contents);
-    let mut decompressed = String::new();
-    decoder.read_to_string(&mut decompressed)?;
-    Ok(s)
 }

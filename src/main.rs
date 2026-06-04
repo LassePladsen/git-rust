@@ -12,6 +12,8 @@ fn main() {
         return;
     }
 
+    object::Object::new(&args[2]);
+
     match args[1].as_str() {
         "init" => command::init(),
         "cat-file" => command::cat_file(&args),
