@@ -1,8 +1,8 @@
 use std::collections::VecDeque;
-use std::io::prelude::*;
 use std::fs;
+use std::io::prelude::*;
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::compression;
 
@@ -10,16 +10,34 @@ pub mod blob;
 
 pub type Bytes = Vec<u8>;
 
-#[derive(Debug)]
-pub enum ObjectType {
+#[derive(Debug, PartialEq, Eq)]
+pub enum ObjectKind {
     Blob,
     Tree,
 }
 
 pub struct Object {
-    type_: ObjectType,
-    size: u32,
-    contents: Bytes,
+    pub kind: ObjectKind,
+    pub size: u32,
+    pub contents: Bytes,
+}
+
+impl Object {
+    pub fn is_kind(&self, kind: ObjectKind) -> bool {
+        self.kind == kind
+    }
+
+    /// Ensures the object is of the given kind by returning Err with premade message.
+    pub fn ensure_kind(&self, kind: ObjectKind) -> Result<()> {
+        if !self.is_kind(kind) {
+            bail!(
+                "Unexpected object kind '{:?}', expected '{:?}'\n",
+                self.kind,
+                ObjectKind::Blob
+            );
+        }
+        Ok(())
+    }
 }
 
 impl Object {
@@ -47,10 +65,10 @@ impl Object {
             type_buf.push(byte);
         }
         // convert type to string and interpret it
-        let type_: ObjectType =
+        let type_: ObjectKind =
             match str::from_utf8(&type_buf).expect("Invalid UTF in object type buffer") {
-                "blob" => ObjectType::Blob,
-                "tree" => ObjectType::Tree,
+                "blob" => ObjectKind::Blob,
+                "tree" => ObjectKind::Tree,
                 s => panic!("Invalid type: {s}"),
             };
         drop(type_buf);
@@ -73,7 +91,7 @@ impl Object {
 
         Ok(Object {
             size,
-            type_,
+            kind: type_,
             contents,
         })
     }

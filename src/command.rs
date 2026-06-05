@@ -1,7 +1,11 @@
 use std::fs::{self, File};
 use std::io::{Write, stdout};
 
-use crate::object::{self, Object, blob};
+use anyhow::{Error, Result, bail, ensure};
+
+use crate::object::{self, Object, ObjectKind, blob};
+
+pub type Output = Vec<u8>;
 
 /// Init git dir
 pub fn init() {
@@ -13,7 +17,7 @@ pub fn init() {
 }
 
 /// Read blob
-pub fn cat_file(args: &[String]) {
+pub fn cat_file(args: &[String]) -> Output {
     // Get blob hash from positional arg
     let mut hash: Option<&str> = None;
     for arg in &args[2..] {
@@ -24,20 +28,16 @@ pub fn cat_file(args: &[String]) {
         hash = Some(arg);
     }
     let Some(hash) = hash else {
-        println!("Missing hash");
-        return;
+        return "Missing hash\n".into();
     };
-
-    // Find hash to objects dir. hash e3123456 is .git/objects/e3/123456
     if hash.len() < 3 {
-        println!("hash name too short");
-        return;
+        return "Hash name too short\n".into();
     }
-    let object = Object::new(hash);
-
-    // Write blob contents to stdout
-    // let contents = blob::read_blob(&path).expect("Could not read blob");
-    // let _ = stdout().write_all(&contents);
+    let object = match Object::new(hash) {
+        Ok(object) => object,
+        Err(e) => return format!("{e}").into(),
+    };
+    object.contents
 }
 
 /// Hash object to blob
@@ -88,10 +88,8 @@ pub fn ls_tree(args: &[String]) {
     };
 
     // TODO: also support full print (where print_name_only=false)
-    
+
     // Read file
     let path = object::get_path(hash);
     // let file = File
-
-
 }
