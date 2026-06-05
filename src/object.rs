@@ -42,7 +42,7 @@ impl Object {
 
 impl Object {
     /// Reads and decompressed object contents
-    pub fn new(object_hash: &str) -> Result<Object> {
+    pub fn read(object_hash: &str) -> Result<Object> {
         let file_path = get_path(object_hash);
         let file = fs::File::open(&file_path)
             .with_context(|| format!("Could not open file '{file_path}'"))?;

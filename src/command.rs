@@ -33,7 +33,7 @@ pub fn cat_file(args: &[String]) -> Output {
     if hash.len() < 3 {
         return "Hash name too short\n".into();
     }
-    let object = match Object::new(hash) {
+    let object = match Object::read(hash) {
         Ok(object) => object,
         Err(e) => return format!("{e}").into(),
     };

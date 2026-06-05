@@ -40,7 +40,7 @@ pub fn read_blob(path: &str) -> BlobResult<'_, Vec<u8>> {
     let contents = fs::read_to_string(path);
     println!("LP contents: {contents:?}");
     let header = "";
-    object::Object::new(path);
+    object::Object::read(path);
 
     // First assert its a blob by checking first 5 characters is "blob "
     // if "blob " != header {
