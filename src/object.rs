@@ -1,6 +1,6 @@
-use std::{fs, io};
-use std::io::prelude::*;
 use std::collections::VecDeque;
+use std::io::prelude::*;
+use std::{fs, io};
 
 use crate::compression;
 
@@ -13,7 +13,6 @@ pub enum ObjectType {
     Blob,
     Tree,
 }
-
 
 pub struct Object {
     type_: ObjectType,
@@ -43,11 +42,12 @@ impl Object {
             type_buf.push(byte);
         }
         // convert type to string and interpret it
-        let type_: ObjectType = match str::from_utf8(&type_buf).expect("Invalid UTF in object type buffer") {
-            "blob" => ObjectType::Blob,
-            "tree" => ObjectType::Tree,
-            s => panic!("Invalid type: {s}"),
-        };
+        let type_: ObjectType =
+            match str::from_utf8(&type_buf).expect("Invalid UTF in object type buffer") {
+                "blob" => ObjectType::Blob,
+                "tree" => ObjectType::Tree,
+                s => panic!("Invalid type: {s}"),
+            };
         drop(type_buf);
 
         // Read size up to null byte
@@ -58,16 +58,20 @@ impl Object {
             }
             size_buf.push(byte);
         }
-        let size: u32 = dbg!(str::from_utf8(&size_buf).expect("Invalid UTF in size type buffer"))
-            .parse().expect("Could not parse size byte to integer");
+        let size: u32 = str::from_utf8(&size_buf)
+            .expect("Invalid UTF in size type buffer")
+            .parse()
+            .expect("Could not parse size byte to integer");
 
         // Read rest of contents
         let contents = Vec::from(decompressed);
 
-        Ok(Object{size, type_, contents})
-
+        Ok(Object {
+            size,
+            type_,
+            contents,
+        })
     }
-
 }
 
 pub fn get_path(object_hash: &str) -> String {
