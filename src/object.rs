@@ -16,9 +16,10 @@ pub enum ObjectKind {
     Tree,
 }
 
+#[derive(Debug)]
 pub struct Object {
     pub kind: ObjectKind,
-    pub size: u32,
+    pub size: usize,
     pub contents: Bytes,
 }
 
@@ -41,6 +42,10 @@ impl Object {
 }
 
 impl Object {
+    pub fn write() -> Object {
+        todo!()
+    }
+
     /// Reads and decompressed object contents
     pub fn read(object_hash: &str) -> Result<Object> {
         let file_path = get_path(object_hash);
@@ -81,7 +86,7 @@ impl Object {
             }
             size_buf.push(byte);
         }
-        let size: u32 = str::from_utf8(&size_buf)
+        let size: usize = str::from_utf8(&size_buf)
             .expect("Invalid UTF in size type buffer")
             .parse()
             .expect("Could not parse size byte to integer");

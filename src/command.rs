@@ -58,13 +58,13 @@ pub fn hash_object(args: &[String]) {
 
     // Read file
     let bytes = match fs::read(path) {
-        Ok(contents) => contents,
+        Ok(bytes) => bytes,
         Err(err) => {
             println!("{err}");
             return;
         }
     };
-    blob::write_blob(&bytes).expect("Could not write blob");
+    let object = Object {contents: bytes, kind: ObjectKind::Blob, size: bytes.len(): usize};
 }
 
 /// Inspect tree object

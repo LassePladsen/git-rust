@@ -1,4 +1,4 @@
-use crate::{compression::{Compression, Decoder, Encoder}, object};
+use crate::{compression::{Compression, Encoder}, object};
 use sha1::{Digest, Sha1};
 use std::{
     fmt::{self, Debug, Display, Formatter},
