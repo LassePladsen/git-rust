@@ -1,6 +1,8 @@
 use std::collections::VecDeque;
 use std::io::prelude::*;
-use std::{fs, io};
+use std::fs;
+
+use anyhow::{Context, Result};
 
 use crate::compression;
 
@@ -22,12 +24,15 @@ pub struct Object {
 
 impl Object {
     /// Reads and decompressed object contents
-    pub fn new(object_hash: &str) -> io::Result<Object> {
+    pub fn new(object_hash: &str) -> Result<Object> {
         let file_path = get_path(object_hash);
-        let file = fs::File::open(file_path)?;
+        let file = fs::File::open(&file_path)
+            .with_context(|| format!("Could not open file '{file_path}'"))?;
         let mut decoder = compression::Decoder::new(file);
         let mut decompressed = Vec::new();
-        let _ = decoder.read_to_end(&mut decompressed)?;
+        let _ = decoder.read_to_end(&mut decompressed).with_context(|| {
+            format!("Could not read decompressed bytes to end for file '{file_path}'")
+        })?;
 
         // Convert contents to vec to efficiently pop from the front
         let mut decompressed = VecDeque::from(decompressed);
